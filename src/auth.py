@@ -1,5 +1,5 @@
 import json
-from flask import app, jsonify, request, _request_ctx_stack
+from flask import jsonify, request, _request_ctx_stack
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
@@ -113,15 +113,14 @@ def requires_auth(f):
 def token_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
+        from src.main import app
         token = get_token_auth_header()
         if not token:
             return jsonify({'message': 'a valid token is missing'})
-        try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
-            session = Session()
-            current_user = session.query(User).filter_by(public_id=data['public_id']).first()
-        except:
-            return jsonify({'message': 'token is invalid'})
+        data = jwt.decode(token, app.config['SECRET_KEY'])
+        session = Session()
+        print(data)
+        current_user = session.query(User).filter_by(id=data['public_id']).first()
         return f(current_user, *args, **kwargs)
     return decorator
 

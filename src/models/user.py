@@ -4,7 +4,7 @@ from .model import Model, Base
 
 
 class User(Model, Base):
-    __tablename__ = 'user'
+    __tablename__ = 'user_app'
 
     login = Column(String(50))
     password = Column(String(250))
@@ -15,7 +15,7 @@ class User(Model, Base):
         self.password = password
 
         
-class ExamSchema(Schema):
+class UserSchema(Schema):
     id = fields.Number()
     login = fields.Str()
     password = fields.Str()

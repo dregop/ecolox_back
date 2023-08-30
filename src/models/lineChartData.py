@@ -11,7 +11,7 @@ class lineChartData(Model, Base):
     data = Column(String)
 
     def __init__(self, userId, category, data, created_by):
-        Model.__init__(self, created_by)
+        Model.__init__(self)
         self.userId = userId
         self.category = category
         self.data = data
