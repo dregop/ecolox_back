@@ -119,7 +119,6 @@ def token_required(f):
             return jsonify({'message': 'a valid token is missing'})
         data = jwt.decode(token, app.config['SECRET_KEY'])
         session = Session()
-        print(data)
         current_user = session.query(User).filter_by(id=data['public_id']).first()
         return f(current_user, *args, **kwargs)
     return decorator

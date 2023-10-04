@@ -20,4 +20,14 @@ flask run --debug
 # docker exec -it 0ab38abd1781 psql -U postgres -W -d online-exam
 
  # drop table user:
-#  drop table "user";
+#  drop table "user_app";
+
+# drop 2 last entries of table
+# DELETE
+# FROM line_chart_data  
+# WHERE id in (
+#     SELECT id 
+#     FROM line_chart_data 
+#     ORDER BY id desc
+#     LIMIT 2
+#     );
