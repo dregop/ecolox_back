@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from itertools import groupby
 import json
 import statistics
@@ -6,8 +6,10 @@ from threading import Thread
 
 from flask import jsonify
 from src.models.lineChartData import LineChartDataSchema, lineChartData
+# from models.lineChartData import LineChartDataSchema, lineChartData
 
 from src.models.model import Session
+# from models.model import Session
 
 
 def calculate_global_mean_data():
@@ -23,8 +25,7 @@ def calculate_global_mean_data():
             all_datas.append(json.loads(object['data']))
     
     for data in all_datas:
-        for k,v in groupby(data,key=lambda x:x['date'][:16]):
-            print(k)
+        for k,v in groupby(data,key=lambda x:x['date'][:16] + 'Z'):
             mean_datas.append({'date': k, 'co2': statistics.mean([x['co2'] for x in list(v)])})
 
     mean_datas.sort(key=lambda r: r['date'])
@@ -37,11 +38,22 @@ def calculate_global_mean_data():
     data = lineChartData(**data)
 
     if session.query(lineChartData).where(lineChartData.userId == 0).first():
-        session.query(lineChartData).where(lineChartData.userId == 0).update({lineChartData.data: data.data, lineChartData.updated_at: datetime.now()})
+        session.query(lineChartData).where(lineChartData.userId == 0).update({lineChartData.data: data.data, lineChartData.updated_at: datetime.datetime.now()})
     else:
         session.add(data)
     session.commit()
     session.close()   
+
+def parseDate(dct):
+    for k,v in dct.items():
+        print(v)
+        if isinstance(v, datetime):
+            try:
+                dct[k] = v + datetime.timedelta(hours=2)
+            except:
+                pass
+    return dct       
+
 
 
 def start_bot():

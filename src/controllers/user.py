@@ -4,10 +4,15 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from jose import jwt
 from src.calculate_global_mean_data import start_bot
+# from calculate_global_mean_data import start_bot
 from src.models.lineChartData import LineChartDataSchema, lineChartData
+# from models.lineChartData import LineChartDataSchema, lineChartData
 from src.models.user import User, UserSchema
-from ..models.model import Session, engine, Base
-from ..auth import AuthError, get_token_auth_header, requires_auth, token_required
+# from models.user import User, UserSchema
+from src.models.model import Session
+# from models.model import Session
+from src.auth import AuthError, token_required
+# from auth import AuthError, token_required
 
 
 user = Blueprint('user', __name__)
@@ -48,14 +53,19 @@ def add_data(current_user):
     data['userId'] = current_user.id
     data = LineChartDataSchema().load(data)
     data = lineChartData(**data)
-
+    
     session = Session()
+    lineData = session.query(lineChartData).filter_by(userId=current_user.id).first()
+    if lineData:
+        session.close()
+        return  make_response('Erreur, des données sont déjà enregistrées pour ce compte', 200)
+
+
     session.add(data)
     session.commit()
-
     new_data = LineChartDataSchema().dump(data)
     session.close()
-    return jsonify(new_data), 201
+    return jsonify(new_data)
 
 
 @user.route('/line_chart_data', methods=['PUT'])
@@ -90,6 +100,7 @@ def handle_auth_error(ex):
 @user.route('/signup', methods=['POST'])
 def signup_post():
     from src.main import app
+    # from main import app
 
     data = request.get_json()
     email = data['email']
@@ -118,6 +129,7 @@ def signup_post():
 @user.route('/login', methods=['POST'])
 def login_post():
     from src.main import app
+    # from main import app
 
     data = request.get_json()
     email = data['email']
@@ -158,3 +170,7 @@ def get_profile(current_user):
     current_user = UserSchema().dump(current_user)
     # serializing as JSON
     return jsonify(current_user)
+
+@user.route('/test', methods=['POST'])
+def test():
+    return jsonify({'test' : 'valid'}) 

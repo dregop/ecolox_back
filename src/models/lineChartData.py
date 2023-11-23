@@ -7,8 +7,8 @@ class lineChartData(Model, Base):
     __tablename__ = 'line_chart_data'
 
     userId = Column(Numeric)
-    category = Column(String)
-    data = Column(String)
+    category = Column(String(50))
+    data = Column(String(92681))
 
     def __init__(self, userId, category, data):
         Model.__init__(self)

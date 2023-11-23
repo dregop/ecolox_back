@@ -1,12 +1,23 @@
-from flask import Flask, jsonify, request
+# import subprocess
+from flask import Flask, jsonify
 from flask_cors import CORS
 
 from src.controllers.user import user
-from .models.model import Session, engine, Base
-from .auth import AuthError, requires_auth
+# from controllers.user import user
+from src.models.model import engine, Base
+# from models.model import engine, Base
+from src.auth import AuthError
+# from auth import AuthError
+
+# execute the shell script
+# subprocess.call(['sh', '../bootstrap.sh'])
 
 # creating the Flask application
 app = Flask(__name__)
+
+# if __name__ == '__main__':
+#     app.run()
+
 CORS(app) # TODO need probably to deel with more restriction in the future
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
 

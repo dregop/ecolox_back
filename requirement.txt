@@ -1,5 +1,11 @@
-Flask  
-datetime 
+Flask
 uuid
 Flask-SQLAlchemy
 PyJWT
+flask_cors
+jsonify
+python-jose
+marshmallow
+werkzeug
+psycopg2-binary
+pymysql
