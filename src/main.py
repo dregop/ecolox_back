@@ -9,11 +9,25 @@ from src.models.model import engine, Base
 from src.auth import AuthError
 # from auth import AuthError
 
+from flask_mail import Mail
+mail = Mail()
+
 # execute the shell script
 # subprocess.call(['sh', '../bootstrap.sh'])
 
 # creating the Flask application
 app = Flask(__name__)
+mail = Mail(app)
+
+# This is the configuration for the email server.
+app.config["MAIL_SERVER"] = "node10-fr.n0c.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USERNAME"] = "nepasrepondre@ecobuddy.fr"
+app.config["MAIL_PASSWORD"] = 'PZDj9cEvdrQG5Ja'
+app.config["MAIL_USE_TLS"] = False
+app.config["MAIL_USE_SSL"] = True
+
+mail = Mail(app)
 
 # if __name__ == '__main__':
 #     app.run()

@@ -4,6 +4,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from jose import jwt
 from src.calculate_global_mean_data import start_bot
+from src.forgot_password import reset_password, reset_password_email_send
 # from calculate_global_mean_data import start_bot
 from src.models.lineChartData import LineChartDataSchema, lineChartData
 # from models.lineChartData import LineChartDataSchema, lineChartData
@@ -174,3 +175,23 @@ def get_profile(current_user):
 @user.route('/test', methods=['POST'])
 def test():
     return jsonify({'test' : 'valid'}) 
+
+
+@user.route('/forgot_password', methods=['POST'])
+def forgot():
+    """
+    POST response method for forgot password email send user.
+    :return: JSON object
+    """
+    input_data = request.get_json()
+    return reset_password_email_send(request, input_data)
+
+
+@user.route('/reset_password/<token>', methods=['POST'])
+def reset(token):
+    """
+    POST response method for save new password.
+    :return: JSON object
+    """
+    input_data = request.get_json()
+    return reset_password(request, input_data, token)
