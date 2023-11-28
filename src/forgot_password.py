@@ -14,7 +14,6 @@ def send_forgot_password_email(request, user):
     :param user: The user object of the user who requested the password reset
     """
     from src.main import app, mail
-
     mail_subject = "Eco Buddy: changement de mot de passe"
     domain = "localhost:4200/#"
     uid = user.id
@@ -38,12 +37,15 @@ def reset_password_email_send(request, input_data):
     create_validation_schema = CreateResetPasswordEmailSendInputSchema()
     errors = create_validation_schema.validate(input_data)
     if errors:
-        return make_response(message=errors)
+        return make_response(errors)
     session = Session()
     user = session.query(User).filter_by(email=input_data.get("email")).first()
     if user is None:
         return make_response("Aucun compte n'existe avec cet email. Es-tu vraiment sûr de toi ?", 200)
-    send_forgot_password_email(request, user)
+    try:
+        send_forgot_password_email(request, user)
+    except Exception as err: 
+        return jsonify(err, 200)
     return jsonify("Un lien "), 200
 
 def reset_password(request, input_data, token):

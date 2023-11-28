@@ -32,7 +32,7 @@ mail = Mail(app)
 # if __name__ == '__main__':
 #     app.run()
 
-CORS(app) # TODO need probably to deel with more restriction in the future
+CORS(app) # TODO: need probably to deel with more restriction in the future
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
 
 # if needed, generate database schema
