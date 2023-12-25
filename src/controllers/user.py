@@ -18,10 +18,11 @@ from src.auth import AuthError, token_required
 
 user = Blueprint('user', __name__)
 @user.route('/line_chart_data/all')
-def get_global_data():
+@token_required
+def get_global_data(current_user):
     # fetching from the database
     session = Session()
-    data_objects = session.query(lineChartData).where(lineChartData.userId == 0).first()
+    data_objects = session.query(lineChartData).where(lineChartData.userId == current_user.id, lineChartData.category == 'internet_global_mean').first()
 
     # transforming into JSON-serializable objects
     data = LineChartDataSchema().dump(data_objects)
@@ -34,9 +35,10 @@ def get_global_data():
 @user.route('/line_chart_data')
 @token_required
 def get_data(current_user):
+
     # fetching from the database
     session = Session()
-    data = session.query(lineChartData).where(lineChartData.userId == current_user.id).first()
+    data = session.query(lineChartData).where(lineChartData.userId == current_user.id, lineChartData.category == 'internet').first()
 
     # transforming into JSON-serializable objects
     data = LineChartDataSchema().dump(data)
@@ -56,7 +58,7 @@ def add_data(current_user):
     data = lineChartData(**data)
     
     session = Session()
-    lineData = session.query(lineChartData).filter_by(userId=current_user.id).first()
+    lineData = session.query(lineChartData).filter_by(userId=current_user.id, category='internet').first()
     if lineData:
         session.close()
         return  make_response('Erreur, des données sont déjà enregistrées pour ce compte', 200)
@@ -72,18 +74,22 @@ def add_data(current_user):
 @user.route('/line_chart_data', methods=['PUT'])
 @token_required
 def update_data(current_user):
+    try:
+        # start daemon to calculate global mean
+        start_bot(current_user)
+    except Exception as err:
+        print(err)
+        return make_response(str(err), 200)
+
     # mount lineChart object
     data = request.get_json()
     data['userId'] = str(current_user.id)
     data = LineChartDataSchema().load(data)
     data = lineChartData(**data)
 
-    # start daemon to calculate global mean
-    start_bot()
-
     # persist exam
     session = Session()
-    session.query(lineChartData).where(lineChartData.userId == current_user.id).update({lineChartData.data: data.data, lineChartData.updated_at: datetime.now()})
+    session.query(lineChartData).where(lineChartData.userId == current_user.id, lineChartData.category == 'internet').update({lineChartData.data: data.data, lineChartData.updated_at: datetime.now()})
     session.commit()
 
     # return created exam
@@ -124,8 +130,8 @@ def signup_post():
 
     session.commit()
 
-    token = jwt.encode({'public_id': new_user.id, 'exp' : datetime.utcnow() + timedelta(minutes=30)}, app.config['SECRET_KEY'])  
-    return jsonify({'idToken' : token, 'expiresIn': datetime.utcnow() + timedelta(minutes=30)})
+    token = jwt.encode({'public_id': new_user.id, 'exp' : datetime.utcnow() + timedelta(minutes=130000)}, app.config['SECRET_KEY'])  
+    return jsonify({'idToken' : token, 'expiresIn': datetime.utcnow() + timedelta(minutes=130000)})
 
 @user.route('/login', methods=['POST'])
 def login_post():
@@ -144,8 +150,8 @@ def login_post():
     # take the user-supplied password, hash it, and compare it to the hashed password in the database
     if not user or not check_password_hash(user.password, password):
         return  make_response('Tu ne te souviens plus de ton mot de passe ou quoi ?', 200)
-    token = jwt.encode({'public_id': user.id, 'exp' : datetime.utcnow() + timedelta(minutes=30)}, app.config['SECRET_KEY'])
-    return jsonify({'idToken' : str(token), 'expiresIn': datetime.utcnow() + timedelta(minutes=30)})
+    token = jwt.encode({'public_id': user.id, 'exp' : datetime.utcnow() + timedelta(minutes=130000)}, app.config['SECRET_KEY'])
+    return jsonify({'idToken' : str(token), 'expiresIn': datetime.utcnow() + timedelta(minutes=130000)})
 
 # @user.route('/login', methods=['GET', 'POST'])  
 # def login_user(): 
@@ -184,7 +190,7 @@ def forgot():
     :return: JSON object
     """
     input_data = request.get_json()
-    return reset_password_email_send(request, input_data)
+    return reset_password_email_send(input_data)
 
 
 @user.route('/reset_password/<token>', methods=['POST'])
@@ -194,4 +200,4 @@ def reset(token):
     :return: JSON object
     """
     input_data = request.get_json()
-    return reset_password(request, input_data, token)
+    return reset_password(input_data, token)
