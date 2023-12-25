@@ -6,7 +6,7 @@ from .model import Model, Base
 class lineChartData(Model, Base):
     __tablename__ = 'line_chart_data'
 
-    userId = Column(Numeric)
+    userId = Column(String(50))
     category = Column(String(50))
     data = Column(String(92681))
 
